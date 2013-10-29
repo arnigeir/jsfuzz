@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>Fuzzy controller</title>
+	<style type="text/css">
+		.indent{
+			margin-left:2em;
+		}
+	</style>
+
+</head>
+
+
+</body>
+<body>
+<h1>JS Fuzzy controller engine</h1>
+<p>
+The fuzzy engine takes in a list of fuzzy variables F and 
+if-then rules of the form {y,L} where y is the output value and
+L is the list of values that the F variables can take.  
+<p>
+<p>
+For example:
+<p>
+<p class="indent">
+	{Y:"HIGH",F:["HIGH","","LOW"]}
+</p>	
+<p>
+equals the IF-THEN rule:
+</p>
+<p class="indent">
+	if F(1) = 'High' AND F(3) = 'LOW'  THEN Y = 'HIGH'
+</p>
+
+<p>
+A fuzzy variable itself is a list of fuzzy values (sets) that span some 
+range of crips values.    
+</p>
+<p>
+The output of the engine is a fuzzy variable Y.  The resulting Y value 
+can be some weighed combination of the sets in Y so to get a crisp value 
+the output value Y must be defuzzified.  The defuzzification function is 
+not part of the engine as multiple implementation exist for such a function.
+</p>
+<p>
+Given the defuzzification function DF() the crisp y output of Y is 
+</p>
+<p class="indent">
+	y = DF(Y)
+</p>
+<p>
+To implement a controller define the fuzzy variables F and the rules.  
+Then for the input vector f of crisp input values fuzzify to get a 
+<p>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!Doctype HTML>
+<html>
+<head>
+	<META http-equiv="Content-Script-Type" content="text/javascript">
+	<link href=​"qunit.css" media=​"screen" rel=​"stylesheet" type=​"text/​css">​
+	<script src="fuzzy.controller.js"></script>
+	<script src="jquery.js"></script>
+	<script src="qunit.js"></script>
+
+	<script>
+		function print(elementId,text){
+			$("#"+elementId).append("<p>"+text+"</p>");
+		}
+		
+		// ******* create the fuzzy variables ********
+		//normalized  fuzzy variable x with 4 fuzzy values (sets) low,medlow,medhigh and high
+		//for input X
+		var varX = new FuzzyVariable();
+		varX.add(new FuzzySet('L','d',0.2,0.3));
+		varX.add(new FuzzySet('ML','t',0.2,0.3,0.4));
+		varX.add(new FuzzySet('MH','t',0.3,0.5,0.7));
+		varX.add(new FuzzySet('H','u',0.6,0.8));
+		//normalized  fuzzy variable dx the derivative of input X
+		var varDX = new FuzzyVariable();
+		varDX.add(new FuzzySet('L','d',0.2,0.5));
+		varDX.add(new FuzzySet('M','t',0.3,0.5,0.7));
+		varDX.add(new FuzzySet('H','u',0.5,0.8));
+		//normalized  fuzzy variable y for the output
+		var varY = new FuzzyVariable();
+		varY.add(new FuzzySet('L','d',0.2,0.5));
+		varY.add(new FuzzySet('M','t',0.3,0.5,0.7));
+		varY.add(new FuzzySet('H','u',0.5,0.8));
+
+		// define the ruleset matrix
+		//x is horizontal and dx is vertical
+		//if x=L && dx=L then y=L
+		//if x=ML && dx=L then y=L
+		//if x=MH && dx=L then y=L
+		//if x=H && dx=L then y=L
+		//...
+		var rules = [];
+		rules.push(['L','L','L','L']);
+		rules.push(['L','M','M','H']);
+		rules.push(['M','H','H','H']);
+
+		//create the engine with fuzzy variables and rules
+		var engine = new FuzzyEngine();
+		engine.setRules(rules);
+		engine.setXVariable(varX);
+		engine.setDXVariable(varDX);
+		engine.setYVariable(varY);
+
+		//now the engine can be run for different input values
+		$(document).ready(function(){
+
+			//print("console","hello");
+			alert(engine.run(0.2,0,45));
+		});
+	</script>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+	
+	<div id="console">
+	</div>
+
+	
+
+</body>
+</html>
