@@ -2,60 +2,48 @@
 Fuzzy set defines a fuzzy value for a fuzzy variable
 =========================================================
 
-The form is either a step-down,step-up or a triangular as
-shown in the figures below.  The actual form is controlled by
-the 3 constructor parameters p1,p2,p3
+The fuzzy set is a triangular function 
 
-Examples:
+        ^
+       / \
+      /   \
+     /     \
+----|---|---|-------------
+    p1  p2  p3
 
-xL = new FuzzySet(0.4,0.4,0.5);  //step down
-xM = new FuzzySet(0.4,0.5,0.6);  //sawtooth
-xH = new FuzzySet(0.5,0.6,0.6);  //step up
-
---------------------------
-
-If p1 = p2 < p3 then the function is a step down function (the lower limit function)
---------\
-\
-\
---------|--|-----------------
-p1 p2
-
-If p3>p2>p1 then the function is a sawtooth
-/\
-/  \
-/    \
-----|---|--|-----------------
-p1  p2 p3
-
-If p3 = p2 > p1 then the function is a step up function (the upper limit function)
-/---------------
-/
-/
-----|---|-------------------
-p1  p2
-
-Other combination of fuzzy set variables are not valid
-
+	
 Object properties and methods
 ------------------------------------
 className :  returns 'FuzzySet'
-calculate(x): calculate the fuzzy set value for real value X
+area: returns the total area of the fuzzyset
+weightedArea : returns the weighed area (1-this.value) * area
+value : returns the calculated fuzzy result from the last calculate() method
+calculate(x): calculate fuzzy set value  ( this.value  )
  */
 var FuzzySet = function (p1, p2, p3) {
+	"use strict";
 	return {
 		className : 'FuzzySet',
 		area : function () {
 			if (this.totalarea === undefined) {
 				if (p3 > p2 && p2 > p1) {
 					this.totalarea = (p3 - p1) / 2;
-				} else if (p1 === p2 && p3 > p2) {
-					this.totalarea = p1 + (p3 - p1) / 2;
-				} else if (p2 === p3 && p2 > p1) {
-					this.totalarea = 1 - p2 + (p2 - p1) / 2;
+				} else {
+					this.totalarea = 0;
 				}
 			}
 			return this.totalarea;
+		},
+		weightedArea : function(){
+			this.weighedArea = 0;
+			if(this.value && this.area){
+				this.weighedArea = (1 - this.value) * this.area;
+			}
+			return this.weighedArea;
+			
+		},
+		value : function(){
+			return this.value;
 		},
 		calculate : function (x) {
 			//create a new property 'value' to hold the results of the calculations
@@ -68,19 +56,7 @@ var FuzzySet = function (p1, p2, p3) {
 				else if (x > p2 && x < p3) {
 					this.value = 1.0 - ((x - p2) / (p3 - p2));
 				}
-			} else if (p1 === p2 && p3 > p2) {
-				if (x <= p1) {
-					this.value = 1.0;
-				}else if (x > p2 && x < p3){
-					this.value = 1.0 - (x - p2) / (p3 - p2);
-					}
-			} else if (p2 === p3 && p2 > p1) {
-				if (x >= p2){
-					this.value = 1.0;
-				}else if (x > p1 && x < p2) {
-					this.value = (x - p1) / (p2 - p1);
-				}
-			}
+			} 
 			return this.value;
 		}
 	};
@@ -99,6 +75,7 @@ fireRules() :  loopls through all sets and check if rule is assigned and execute
  */
 
 var FuzzyVariable = function () {
+	"use strict";
 	var that = this;
 	return {
 		className : 'FuzzyVariable',
@@ -106,7 +83,7 @@ var FuzzyVariable = function () {
 			var fuzzysets = this.getFuzzySets()
 			,n = fuzzysets.length
 			,i = 0;
-			for (i = 0; i < n; i++) {
+			for (i = 0; i < n; i += 1) {
 				fuzzysets[i].variable = that;
 				fuzzysets[i].calculate(v);
 			}
@@ -122,23 +99,19 @@ var FuzzyVariable = function () {
 				,i = 0
 				,sum=0;		
 			
-			for(i=0;i<n;i++){
+			for(i=0;i<n;i += 1){
 				sum += (1-fuzzysets[i].value)*fuzzysets[i].area();
-			};
+			}
 			return sum/n;
-		
-
-
 		},
 		getFuzzySets : function () {
 			var items = [],
 				property,
 				n;
 			for (property in this) {
-				n = property;
 				if (this.hasOwnProperty(property) &&
 					this[property].className === 'FuzzySet') {
-					this[property].name = n;
+					this[property].name = property;
 					items.push(this[property]);
 				}
 			}
@@ -150,7 +123,7 @@ var FuzzyVariable = function () {
 				fuzzyset,
 				rule,
 				i = 0;
-			for (i = 0; i < n; i++) {
+			for (i = 0; i < n; i += 1) {
 				fuzzyset = fuzzysets[i];
 				rule = fuzzyset.rule;
 				//if set has rule then calculate the output value
@@ -169,6 +142,7 @@ var FuzzyVariable = function () {
 // fire() : returns the expression fuzzy value
 
 var FuzzyRule = function (list) {
+	"use strict";
 	var i,
 		min;
 	return {
@@ -179,7 +153,7 @@ var FuzzyRule = function (list) {
 				return 0;
 			}
 			min = 1;
-			for (i = 0; i < list.length; i++) {
+			for (i = 0; i < list.length; i += 1) {
 				if (list[i] !== undefined && list[i].className === 'FuzzySet' && list[i].value !== 'undefined') {
 					if (list[i].value < min)
 					{

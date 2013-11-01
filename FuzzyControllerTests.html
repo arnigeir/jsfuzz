@@ -19,39 +19,59 @@
 
 		varX = new FuzzyVariable();
 		//add some fuzzy sets to it
-		varX.L = new FuzzySet(0.4,0.4,0.5);
+		varX.L = new FuzzySet(0.3,0.4,0.5);
 		varX.M = new FuzzySet(0.4,0.5,0.6);
-		varX.H = new FuzzySet(0.5,0.6,0.6);
+		varX.H = new FuzzySet(0.5,0.6,0.7);
 		
 		varDX = new FuzzyVariable();
 		//add some fuzzy sets to it
-		varDX.L = new FuzzySet(0.4,0.4,0.5);
+		varDX.L = new FuzzySet(0.3,0.4,0.5);
 		varDX.M = new FuzzySet(0.4,0.5,0.6);
-		varDX.H = new FuzzySet(0.5,0.6,0.6);
+		varDX.H = new FuzzySet(0.5,0.6,0.7);
 
 		varY = new FuzzyVariable();
 		//add some fuzzy sets to it
-		varY.L = new FuzzySet(0.4,0.4,0.5);
+		varY.L = new FuzzySet(0.3,0.4,0.5);
 		varY.M = new FuzzySet(0.4,0.5,0.6);
-		varY.H = new FuzzySet(0.5,0.6,0.6);
+		varY.H = new FuzzySet(0.5,0.6,0.7);
 	}
+	// FuzzySet tests
+	
 	test( "Test area calculations", function(){
-		setup();
-		equal(Math.floor(varX.L.area()*100+0.5),45,"The fuzzy area for L  is 0.45");
-		equal(Math.floor(varX.M.area()*100+0.5),10,"The fuzzy area for M  is 0.1");
-		equal(Math.floor(varX.H.area()*100+0.5),45,"The fuzzy area for H  is 0.45");
+		
+		var set = new FuzzySet(0.4,0.5,0.6);
+		equal(Math.floor(set.area()*100+0.5),10,"The fuzzy area of set is (0.4,0.5,0.6) is 0.1");
+
+		set = new FuzzySet(0.1,0.5,0.9);
+		equal(Math.floor(set.area()*100+0.5),40,"The fuzzy area of set is (0.1,0.5,0.9) is 0.4");
+
+		set = new FuzzySet(0,0.5,1);
+		equal(Math.floor(set.area()*100+0.5),50,"The fuzzy area of set is (0.1,0.5,0.9) is 0.5");
 	});
+	
+	test("test calculate method", function() {
+		var set = new FuzzySet(0.4,0.5,0.6);
+		equal(Math.floor(set.calculate(0)),0,"The fuzzy value of 0 is 0");
+		equal(Math.floor(set.calculate(0.4)),0,"The fuzzy value of 0.4 is 0");
+		equal(Math.floor(set.calculate(0.45)*100+0.5),50,"The fuzzy value of 0.45 is 0.5");
+		equal(Math.floor(set.calculate(0.5)*100+0.5),100,"The fuzzy value of 0.5 is 1");
+		equal(Math.floor(set.calculate(0.55)*100+0.5),50,"The fuzzy value of 0.55 is 0.5");
+		equal(Math.floor(set.calculate(0.6)*100+0.5),0,"The fuzzy value of 0.6 is 0");
+		equal(Math.floor(set.calculate(0.7)*100+0.5),0,"The fuzzy value of 0.7  is 0");
+		equal(Math.floor(set.calculate(1)*100+0.5),0,"The fuzzy value of 1 is 0");
+	});
+	
 
     test( "Fuzzification of value 0", function() {
 		setup();
-		varX.fuzzyfy(0);  
+		varX.fuzzyfy(0.4);  
 		//check the calculated fuzzy set value for each set
-		equal(varX.L.value,1,"The fuzzy value for L at 0 is 1");
-		equal(varX.M.value,0,"The fuzzy value for M at 0 is 0");
-		equal(varX.H.value,0,"The fuzzy value for H at 0 is 0");
+		equal(varX.L.value,1,"The fuzzy value for L at 0.4 is 1");
+		equal(varX.M.value,0,"The fuzzy value for M at 0.4 is 0");
+		equal(varX.H.value,0,"The fuzzy value for H at 0.4 is 0");
     });
 	
-	test( "Fuzzification of value 0.25", function() {
+	test( "Fuzzification of value 0.45", function() {
 		setup();
 		varX.fuzzyfy(0.45);
 		equal(Math.floor(varX.L.value*10+0.5),5,"The fuzzy value for L at 0.25 is 0.5");
@@ -77,7 +97,7 @@
 		//calculate the set values and bind the sets to the variable
 		setup();
 		varX.fuzzyfy(0.45);
-		varDX.fuzzyfy(0);
+		varDX.fuzzyfy(0.4);
 		
 		varY.L.rule = new FuzzyRule([varX.L,varDX.L]);
 		varY.M.rule = new FuzzyRule([varX.H,varDX.L]);
@@ -113,28 +133,23 @@
 		equal(varY.H.value,0,"The fuzzy output value for rule y.H is ?");
 	});
 	
+
+	
 	test("test defuzzification method",function(){
-		var varY = new FuzzyVariable(),
-			outputValue;
+		var varY = new FuzzyVariable();
 		//add some fuzzy sets to it
-		varY.L = new FuzzySet(0.4,0.4,0.5);
-		varY.L.calculate(0.5);	
-		
+		varY.L = new FuzzySet(0.3,0.4,0.5);
 		varY.M = new FuzzySet(0.4,0.5,0.6);
+		varY.H = new FuzzySet(0.5,0.6,0.7);
+		
+		
+		varY.L.calculate(0.4);	
 		varY.M.calculate(0);
-		
-		
-		varY.H = new FuzzySet(0.5,0.6,0.6);
-		varY.H.calculate(0.5);
+		varY.H.calculate(0.6);
 		
 		outputVariable = varY.defuzzify();
 		
-		equal(varY.L.area(),0.41,"");
-		equal(varY.M.area(),0.1,"");
-		equal(varY.H.area(),0.41,"");
-		
-		
-		//equal(outputVariable,0.5,"Centroid value should be 0.5");
+		equal(outputVariable,0.5,"Centroid value should be 0.5");
 		
 		
 		
