@@ -2,70 +2,178 @@
 <html>
 <head>
 	<META http-equiv="Content-Script-Type" content="text/javascript">
-	<link href=​"qunit.css" media=​"screen" rel=​"stylesheet" type=​"text/​css">​
 	<script src="fuzzy.controller.js"></script>
 	<script src="jquery.js"></script>
-	<script src="qunit.js"></script>
+
 
 	<script>
-		function print(elementId,text){
-			$("#"+elementId).append("<p>"+text+"</p>");
-		}
-		
 		// ******* create the fuzzy variables ********
 		//normalized  fuzzy variable x with 4 fuzzy values (sets) low,medlow,medhigh and high
 		//for input X
-		var varX = new FuzzyVariable();
-		varX.add(new FuzzySet('L','d',0.2,0.3));
-		varX.add(new FuzzySet('ML','t',0.2,0.3,0.4));
-		varX.add(new FuzzySet('MH','t',0.3,0.5,0.7));
-		varX.add(new FuzzySet('H','u',0.6,0.8));
-		//normalized  fuzzy variable dx the derivative of input X
-		var varDX = new FuzzyVariable();
-		varDX.add(new FuzzySet('L','d',0.2,0.5));
-		varDX.add(new FuzzySet('M','t',0.3,0.5,0.7));
-		varDX.add(new FuzzySet('H','u',0.5,0.8));
-		//normalized  fuzzy variable y for the output
-		var varY = new FuzzyVariable();
-		varY.add(new FuzzySet('L','d',0.2,0.5));
-		varY.add(new FuzzySet('M','t',0.3,0.5,0.7));
-		varY.add(new FuzzySet('H','u',0.5,0.8));
+		varX = new FuzzyVariable();
+		//add some fuzzy sets to it
+		varX.VL = new FuzzySet(-0.25,0.0,0.25);
+		varX.L = new FuzzySet(0.0,0.25,0.5);
+		varX.M = new FuzzySet(0.25,0.5,0.75);
+		varX.H = new FuzzySet(0.5,0.75,1.0);
+		varX.VH = new FuzzySet(0.75,1.0,1.25);
+		
+		varDX = new FuzzyVariable();
+		//add some fuzzy sets to it
+		varDX.VL = new FuzzySet(-0.25,0.0,0.25);
+		varDX.L = new FuzzySet(0.0,0.25,0.5);
+		varDX.M = new FuzzySet(0.25,0.5,0.75);
+		varDX.H = new FuzzySet(0.5,0.75,1.0);
+		varDX.VH = new FuzzySet(0.75,1.0,1.25);
 
-		// define the ruleset matrix
-		//x is horizontal and dx is vertical
-		//if x=L && dx=L then y=L
-		//if x=ML && dx=L then y=L
-		//if x=MH && dx=L then y=L
-		//if x=H && dx=L then y=L
-		//...
-		var rules = [];
-		rules.push(['L','L','L','L']);
-		rules.push(['L','M','M','H']);
-		rules.push(['M','H','H','H']);
+		varY = new FuzzyVariable();
+		//add some fuzzy sets to it
+		varY.VL = new FuzzySet(-0.25,0.0,0.25);
+		varY.L = new FuzzySet(0.0,0.25,0.5);
+		varY.M = new FuzzySet(0.25,0.5,0.75);
+		varY.H = new FuzzySet(0.5,0.75,1.0);
+		varY.VH = new FuzzySet(0.75,1.0,1.25);
+		
+		/*
+		Create folowing rule matrix:
+		            X
+		DX	|	VL	L	M	H	VH
+		--------------------------		
+		VL 	|  	VL	L	M 	H	VH
+		L	| 	L	L	M	H	VH
+		M	|	L	M	M	H	VH
+		H	| 	M	H	H	VH	VH
+		VH	|	M	H	VH	VH	VH
+		
+		The pendulum angle is X
+		The angular velocity is DX
+		The values in the matrix is the horizontal speed of the pendulum carriage
+		*/
+		
+				
 
-		//create the engine with fuzzy variables and rules
-		var engine = new FuzzyEngine();
-		engine.setRules(rules);
-		engine.setXVariable(varX);
-		engine.setDXVariable(varDX);
-		engine.setYVariable(varY);
 
-		//now the engine can be run for different input values
+
+		varY.VL.rule = new FuzzyRule();
+		varY.VL.rule.addExpr([varX.VL,varDX.VL]);
+	
+		varY.L.rule = new FuzzyRule();
+		varY.L.rule.addExpr([varX.L,varDX.VL]);
+		varY.L.rule.addExpr([varX.L,varDX.L]);
+		varY.L.rule.addExpr([varX.VL,varDX.L]);
+		varY.L.rule.addExpr([varX.VL,varDX.M]);
+		
+		varY.M.rule = new FuzzyRule();
+		varY.M.rule.addExpr([varX.M,varDX.VL]);
+		varY.M.rule.addExpr([varX.M,varDX.L]);
+		varY.M.rule.addExpr([varX.M,varDX.M]);
+		varY.M.rule.addExpr([varX.L,varDX.M]);
+		varY.M.rule.addExpr([varX.VL,varDX.H]);
+		varY.M.rule.addExpr([varX.VL,varDX.VH]);
+		
+		varY.H.rule = new FuzzyRule();
+		varY.H.rule.addExpr([varX.H,varDX.VL]);
+		varY.H.rule.addExpr([varX.H,varDX.L]);
+		varY.H.rule.addExpr([varX.H,varDX.M]);
+		varY.H.rule.addExpr([varX.H,varDX.M]);
+		varY.H.rule.addExpr([varX.M,varDX.H]);
+		varY.H.rule.addExpr([varX.L,varDX.H]);
+		varY.H.rule.addExpr([varX.L,varDX.VH]);
+		
+		varY.VH.rule = new FuzzyRule();
+		varY.VH.rule.addExpr([varX.VH,varDX.VL]);
+		varY.VH.rule.addExpr([varX.VH,varDX.L]);
+		varY.VH.rule.addExpr([varX.VH,varDX.M]);
+		varY.VH.rule.addExpr([varX.VH,varDX.H]);
+		varY.VH.rule.addExpr([varX.VH,varDX.VH]);
+		varY.VH.rule.addExpr([varX.H,varDX.H]);
+		varY.VH.rule.addExpr([varX.M,varDX.VH]);
+		varY.VH.rule.addExpr([varX.H,varDX.VH]);
+
+		
+		//normalizes the angle and angular velocity to values between 0 and 1
+		function Normalize(value){
+			if(value<0.0) value = 0.0;
+			else if(value>90.0) value = 90.0
+			return value/90.0;
+		}
+		
+		function GetFuzzyRow(v){
+			var fuzzysets = v.getFuzzySets(),
+			n = fuzzysets.length,
+			i = 0,
+			html = "";
+			for(i=0;i<n;i++){
+				html += "<td>"+fuzzysets[i].getFuzzyValue()+"</td>";
+			}
+			return html;
+		}
+		
 		$(document).ready(function(){
-
-			//print("console","hello");
-			alert(engine.run(0.2,0,45));
+			$("#pad").mousemove(function(event){
+				var offset = $(this).offset();
+				var angle = Normalize(event.pageX-offset.left);
+				var velocity = Normalize(event.pageY-offset.top);
+				
+				varX.fuzzyfy(angle);
+				varDX.fuzzyfy(velocity);
+				varY.fireRules();
+				var v = varY.defuzzify();
+				var html = "Fuzzy set values:<table>"; 
+				html += "<tr><th> </th><th>VL</th><th>L</th><th>M</th><th>H</th><th>VH</th><tr>";
+				html += "<tr><td>X</td>"+ GetFuzzyRow(varX) + "<tr>";
+				html += "<tr><td>DX</td>"+ GetFuzzyRow(varDX) + "<tr>";
+				html += "<tr><td>Y</td>"+ GetFuzzyRow(varY) + "<tr>";
+				html += "</table>";
+				html += "<br/><b>Input values:</b> angle= "+angle*90+"   angular velocity= "+velocity*90;
+				html += "<br/><b>Output value:</b> horizontal speed="+v;
+				
+				
+				$("#input").html(html);
+			}).mouseout(function(){$("#input").html("");});
+		
 		});
+	
 	</script>
 	<style type="text/css">
+		#input{
+			margin:10px;
+		}
+		
+		#pad{
+			width:90px;
+			height:90px;
+			min-width:90px;
+			min-height:90px;
+			border:1px solid gray;
+			background-color:#efefef;
+		}
+		
+		table
+		{
+			border-collapse:collapse;
+		}
+		table,th, td
+		{
+			border: 1px solid black;
+		}
+		td{
+			width:200px;
+		}
+		th{
+			background-color:silver;
+		}
 	</style>
 </head>
 <body>
-	
-	<div id="console">
-	</div>
+<div>
+	<p>Hover with the mouse over the gray pad.  The horizontal axis is the angular value (0-90) and the vertical is the angular speed value (0-90)<p>
+	<p>The results of all calculations are shown below the gray pad</p>
+</div>
 
-	
+	<div id="pad"></div>
+	<div id="input"></div>
+	<div id="console"></div>
 
 </body>
 </html>

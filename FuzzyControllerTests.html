@@ -6,10 +6,18 @@
 	<script src="fuzzy.controller.js"></script>
 	<script src="jquery.js"></script>
 	<script src="qunit.js"></script>
-	
+	<style>		
+		*{
+			font-family: 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Calibri, Helvetica, Arial, sans-serif;
+		}
+		h2{
+			color:#0d3349;
+			
+		}
+	</style>
 </head>
 <body>
-	
+	<div><h2>UNIT tests for FuzzyController classes</h2></div>
  <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script>
@@ -40,25 +48,38 @@
 	test( "Test area calculations", function(){
 		
 		var set = new FuzzySet(0.4,0.5,0.6);
-		equal(Math.floor(set.area()*100+0.5),10,"The fuzzy area of set is (0.4,0.5,0.6) is 0.1");
+		equal(Math.floor(set.getArea()*100+0.5),10,"The fuzzy area of set is (0.4,0.5,0.6) is 0.1");
+		
 
 		set = new FuzzySet(0.1,0.5,0.9);
-		equal(Math.floor(set.area()*100+0.5),40,"The fuzzy area of set is (0.1,0.5,0.9) is 0.4");
+		equal(Math.floor(set.getArea()*100+0.5),40,"The fuzzy area of set is (0.1,0.5,0.9) is 0.4");
 
 		set = new FuzzySet(0,0.5,1);
-		equal(Math.floor(set.area()*100+0.5),50,"The fuzzy area of set is (0.1,0.5,0.9) is 0.5");
+		equal(Math.floor(set.getArea()*100+0.5),50,"The fuzzy area of set is (0.1,0.5,0.9) is 0.5");
 	});
 	
-	test("test calculate method", function() {
+	test( "Test weighed area calculations", function(){
+		
 		var set = new FuzzySet(0.4,0.5,0.6);
-		equal(Math.floor(set.calculate(0)),0,"The fuzzy value of 0 is 0");
-		equal(Math.floor(set.calculate(0.4)),0,"The fuzzy value of 0.4 is 0");
-		equal(Math.floor(set.calculate(0.45)*100+0.5),50,"The fuzzy value of 0.45 is 0.5");
-		equal(Math.floor(set.calculate(0.5)*100+0.5),100,"The fuzzy value of 0.5 is 1");
-		equal(Math.floor(set.calculate(0.55)*100+0.5),50,"The fuzzy value of 0.55 is 0.5");
-		equal(Math.floor(set.calculate(0.6)*100+0.5),0,"The fuzzy value of 0.6 is 0");
-		equal(Math.floor(set.calculate(0.7)*100+0.5),0,"The fuzzy value of 0.7  is 0");
-		equal(Math.floor(set.calculate(1)*100+0.5),0,"The fuzzy value of 1 is 0");
+		equal(Math.floor(set.getFuzzyArea()*100+0.5),0,"Default fuzzy value and area is 0");
+		set.setFuzzyValue(0.0);
+		equal(Math.floor(set.getFuzzyArea()*100+0.5),0,"Fuzzy area of 0 is 0");
+		set.setFuzzyValue(0.5);
+		equal(Math.floor(set.getFuzzyArea()*1000+0.5),75,"The fuzzy area of 0.5 is 0.075");
+		set.setFuzzyValue(1);
+		equal(Math.floor(set.getFuzzyArea()*100+0.5),10,"The fuzzy area of 1 is 0.1");
+	});
+	
+	test("test calculateFuzzyValue method", function() {
+		var set = new FuzzySet(0.4,0.5,0.6);
+		equal(Math.floor(set.calculateFuzzyValue(0)),0,"The fuzzy value of 0 is 0");
+		equal(Math.floor(set.calculateFuzzyValue(0.4)),0,"The fuzzy value of 0.4 is 0");
+		equal(Math.floor(set.calculateFuzzyValue(0.45)*100+0.5),50,"The fuzzy value of 0.45 is 0.5");
+		equal(Math.floor(set.calculateFuzzyValue(0.5)*100+0.5),100,"The fuzzy value of 0.5 is 1");
+		equal(Math.floor(set.calculateFuzzyValue(0.55)*100+0.5),50,"The fuzzy value of 0.55 is 0.5");
+		equal(Math.floor(set.calculateFuzzyValue(0.6)*100+0.5),0,"The fuzzy value of 0.6 is 0");
+		equal(Math.floor(set.calculateFuzzyValue(0.7)*100+0.5),0,"The fuzzy value of 0.7  is 0");
+		equal(Math.floor(set.calculateFuzzyValue(1)*100+0.5),0,"The fuzzy value of 1 is 0");
 	});
 	
 
@@ -66,48 +87,55 @@
 		setup();
 		varX.fuzzyfy(0.4);  
 		//check the calculated fuzzy set value for each set
-		equal(varX.L.value,1,"The fuzzy value for L at 0.4 is 1");
-		equal(varX.M.value,0,"The fuzzy value for M at 0.4 is 0");
-		equal(varX.H.value,0,"The fuzzy value for H at 0.4 is 0");
+		equal(varX.L.getFuzzyValue(),1,"The fuzzy value for L at 0.4 is 1");
+		equal(varX.M.getFuzzyValue(),0,"The fuzzy value for M at 0.4 is 0");
+		equal(varX.H.getFuzzyValue(),0,"The fuzzy value for H at 0.4 is 0");
     });
 	
 	test( "Fuzzification of value 0.45", function() {
 		setup();
 		varX.fuzzyfy(0.45);
-		equal(Math.floor(varX.L.value*10+0.5),5,"The fuzzy value for L at 0.25 is 0.5");
-		equal(Math.floor(varX.M.value*10+0.5),5,"The fuzzy value for M at 0.25 is 0.5");
-		equal(Math.floor(varX.H.value*10+0.5),0,"The fuzzy value for H at 0.25 is 0");
+		equal(Math.floor(varX.L.getFuzzyValue()*10+0.5),5,"The fuzzy value for L at 0.25 is 0.5");
+		equal(Math.floor(varX.M.getFuzzyValue()*10+0.5),5,"The fuzzy value for M at 0.25 is 0.5");
+		equal(Math.floor(varX.H.getFuzzyValue()*10+0.5),0,"The fuzzy value for H at 0.25 is 0");
     });
 	test( "Fuzzification of value 0.5", function() {
 		setup();
 		varX.fuzzyfy(0.5);
-		equal(Math.floor(varX.L.value*10+0.5),0,"The fuzzy value for L at 0.5 is 0");
-		equal(Math.floor(varX.M.value*10+0.5),10,"The fuzzy value for M at 0.5 is 1");
-		equal(Math.floor(varX.H.value*10+0.5),0,"The fuzzy value for H at 0.5 is 0");
+		equal(Math.floor(varX.L.getFuzzyValue()*10+0.5),0,"The fuzzy value for L at 0.5 is 0");
+		equal(Math.floor(varX.M.getFuzzyValue()*10+0.5),10,"The fuzzy value for M at 0.5 is 1");
+		equal(Math.floor(varX.H.getFuzzyValue()*10+0.5),0,"The fuzzy value for H at 0.5 is 0");
     });
 	test( "Fuzzification of value 0.55", function() {
 		setup();
 		varX.fuzzyfy(0.55);
-		equal(Math.floor(varX.L.value*10+0.5),0,"The fuzzy value for L at 0.55 is 0");
-		equal(Math.floor(varX.M.value*10+0.5),5,"The fuzzy value for M at 0.55 is 0.5");
-		equal(Math.floor(varX.H.value*10+0.5),5,"The fuzzy value for H at 0.55 is 0.5");
+		equal(Math.floor(varX.L.getFuzzyValue()*10+0.5),0,"The fuzzy value for L at 0.55 is 0");
+		equal(Math.floor(varX.M.getFuzzyValue()*10+0.5),5,"The fuzzy value for M at 0.55 is 0.5");
+		equal(Math.floor(varX.H.getFuzzyValue()*10+0.5),5,"The fuzzy value for H at 0.55 is 0.5");
     });
 	
 	test( "Fuzzy rule fire test with undefined rule", function() {
 		//calculate the set values and bind the sets to the variable
+		var val=0;
 		setup();
 		varX.fuzzyfy(0.45);
 		varDX.fuzzyfy(0.4);
 		
-		varY.L.rule = new FuzzyRule([varX.L,varDX.L]);
-		varY.M.rule = new FuzzyRule([varX.H,varDX.L]);
+		var rule1 = new FuzzyRule();
+		rule1.addExpr([varX.L,varDX.L]);
+		varY.L.rule = rule1;
+
+		var rule2 = new FuzzyRule();
+		rule2.addExpr([varX.H,varDX.L]);
+		varY.M.rule = rule2;
+		
 		//do not define a y.H rule
 		varY.fireRules(); //fire all set rules for this variable
 		
 		//check the output fuzzy set values
-		equal(Math.floor(varY.L.value*10+0.5),5,"The fuzzy output value y.L for rule L is 0.5");
-		equal(varY.M.value,0,"The fuzzy output value for y.M rule L is 0");
-		equal(varY.H.value,undefined,"The fuzzy output value for y.H rule L is undefined");
+		equal(Math.floor(varY.L.getFuzzyValue()*10+0.5),5,"The fuzzy output value y.L for rule L is 0.5");
+		equal(varY.M.getFuzzyValue(),0,"The fuzzy output value for y.M rule L is 0");
+		equal(varY.H.getFuzzyValue(),0,"The fuzzy output value for y.H rule L is undefined");
 	});
 	
 	
@@ -116,9 +144,13 @@
 		//define fuzzy variables and their sets
 		setup();
 		//define the rules
-		varY.L.rule = new FuzzyRule([varX.L,varDX.L]);
-		varY.M.rule = new FuzzyRule([varX.M,varDX.M]);
-		varY.H.rule = new FuzzyRule([varX.H,varDX.H]);
+		varY.L.rule = new FuzzyRule();
+		varY.L.rule.addExpr([varX.L,varDX.L]);
+		
+		varY.M.rule = new FuzzyRule();
+		varY.M.rule.addExpr([varX.M,varDX.M]);
+		varY.H.rule = new FuzzyRule();
+		varY.H.rule.addExpr([varX.H,varDX.H]);
 		
 		//calculate the set values 
 		varX.fuzzyfy(0.5);
@@ -128,36 +160,116 @@
 		varY.fireRules(); 
 		
 		//check the output fuzzy set values
-		equal(varY.L.value,0,"The fuzzy output value rule y.L is 0");
-		equal(Math.floor(varY.M.value*10+0.5),5,"The fuzzy output value for rule y.M is 0.5");
-		equal(varY.H.value,0,"The fuzzy output value for rule y.H is ?");
+		equal(varY.L.getFuzzyValue(),0,"The fuzzy output value rule y.L is 0");
+		equal(Math.floor(varY.M.getFuzzyValue()*10+0.5),5,"The fuzzy output value for rule y.M is 0.5");
+		equal(varY.H.getFuzzyValue(),0,"The fuzzy output value for rule y.H is ?");
 	});
 	
 
 	
 	test("test defuzzification method",function(){
 		var varY = new FuzzyVariable();
+		var outputVariable;
 		//add some fuzzy sets to it
 		varY.L = new FuzzySet(0.3,0.4,0.5);
 		varY.M = new FuzzySet(0.4,0.5,0.6);
 		varY.H = new FuzzySet(0.5,0.6,0.7);
 		
 		
-		varY.L.calculate(0.4);	
-		varY.M.calculate(0);
-		varY.H.calculate(0.6);
+		varY.L.calculateFuzzyValue(0.4);	
+		varY.M.calculateFuzzyValue(0);
+		varY.H.calculateFuzzyValue(0.6);
 		
+		equal(Math.floor(varY.L.getFuzzyValue()*10+0.5),Math.floor(varY.H.getFuzzyValue()*10+0.5),"Areas of both sets should be equal");
+		
+		equal(Math.floor(varY.L.getFuzzyArea()*10+0.5),1,"Weighed area should be 0.1");	
+		equal(Math.floor(varY.H.getFuzzyArea()*10+0.5),1,"Weighed area should be 0.1");	
+
 		outputVariable = varY.defuzzify();
+		equal(outputVariable,0.5,"Centroid value should be 0.5");		
 		
-		equal(outputVariable,0.5,"Centroid value should be 0.5");
+		varY.M.calculateFuzzyValue(0.5);
+		equal(Math.floor(varY.M.getFuzzyArea()*10+0.5),1,"Weighed area should be 0.1");	
+	
+		outputVariable = varY.defuzzify();
+		equal(outputVariable,0.5,"Centroid value should be 0.5");			
+	});
+	
+	test("test #2 defuzzification method",function(){
+		var varY = new FuzzyVariable();
+		var outputVariable;
+		//add some fuzzy sets to it
+		varY.L = new FuzzySet(0.3,0.4,0.5);
+		varY.H = new FuzzySet(0.5,0.6,0.7);
+		
+		
+		varY.L.calculateFuzzyValue(0.34);	
+		varY.H.calculateFuzzyValue(0.6);
+		
+		var areaL = varY.L.getFuzzyArea();
+		var areaH = varY.H.getFuzzyArea();
+		
+		equal(Math.floor(areaL*1000+0.5),64,"Weighed area should approx 0.061");	
+		equal(Math.floor(areaH*10+0.5),1,"Weighed area should be 0.1");	
+
+		outputVariable = varY.defuzzify();
+		equal(Math.floor(outputVariable*1000+0.5),522,"Centroid value should be approx 0.519");		
+	});
+	
+	test("test fuzzy controller",function(){
+		var y;
+		setup();
+		//add some rules...
+		
+		//if x is low and dx is low then y is low
+		//if x is medium and dx is medium then y is medium
+		//if x is hing and dx is high then y is high
+		//varY.L.rule = new FuzzyRule([varX.L,varDX.L]);
+		varY.L.rule = new FuzzyRule();
+		varY.L.rule.addExpr([varX.L,varDX.L]);
+		varY.L.rule.addExpr([varX.L,varDX.M]);
+		varY.L.rule.addExpr([varX.L,varDX.H]);
+		
+		varY.M.rule = new FuzzyRule();
+		varY.M.rule.addExpr([varX.M,varDX.L]);
+		varY.M.rule.addExpr([varX.M,varDX.M]);
+		varY.M.rule.addExpr([varX.M,varDX.H]);
+		
+		varY.H.rule = new FuzzyRule();
+		varY.H.rule.addExpr([varX.H,varDX.L]);
+		varY.H.rule.addExpr([varX.H,varDX.M]);
+		varY.H.rule.addExpr([varX.H,varDX.H]);
 		
 		
 		
+		//now some x,dx inputs that trigger the y.L rule
+		varX.fuzzyfy(0.4);
+		varDX.fuzzyfy(0.4);
+		//fire all rules on y
+		varY.fireRules(); 
+		//get the output
+		y = varY.defuzzify();
+		equal(Math.floor(y*10+0.5),4,"should trigger only the low rule");
+		
+		//now trigger the y.M rule
+		varX.fuzzyfy(0.5);
+		varDX.fuzzyfy(0.5);
+		//fire all rules on y
+		varY.fireRules(); 
+		//get the output
+		y = varY.defuzzify();
+		equal(Math.floor(y*10+0.5),5,"should trigger only the medium rule");		
+		
+		//and finally trigger the y.H rule
+		varX.fuzzyfy(0.6);
+		varDX.fuzzyfy(0.6);
+		//fire all rules on y
+		varY.fireRules(); 
+		//get the output
+		y = varY.defuzzify();
+		equal(Math.floor(y*10+0.5),6,"should trigger only the medium rule");		
 	});
 
-	
-
-	
 	
   </script>
 
