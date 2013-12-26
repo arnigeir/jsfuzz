@@ -20,12 +20,12 @@ linearly from 0.0 to 1.0 in the interval [0.0 , 0.5] and decreases linearly from
 
 The following code defines the input fuzzy variable fv1 for a input value over the range [0.0 , 1.0]. 
 
-	fvI1 = new FuzzyVariable();
-	fvI1.VL = new FuzzySet(-0.25,0.0,0.25);
-	fvI1.L = new FuzzySet(0.0,0.25,0.5);
-	fvI1.M = new FuzzySet(0.25,0.5,0.75);
-	fvI1.H = new FuzzySet(0.5,0.75,1.0);
-	fvI1.VH = new FuzzySet(0.75,1.0,1.25);
+	i1 = new FuzzyVariable();
+	i1.VL = new FuzzySet(-0.25,0.0,0.25);
+	i1.L = new FuzzySet(0.0,0.25,0.5);
+	i1.M = new FuzzySet(0.25,0.5,0.75);
+	i1.H = new FuzzySet(0.5,0.75,1.0);
+	i1.VH = new FuzzySet(0.75,1.0,1.25);
 
 This variable has five fuzzy sets (VL,L,M,H,VH) with different values.	
 	
@@ -35,19 +35,19 @@ at points 0.0 and 1.0.
 
 If the controller has another control input then define another fuzzy variable fv2
 
-	fvI2= new FuzzyVariable();
-	fvI2.L = new FuzzySet(-0.5,0.0,0.5);
-	fvI2.M = new FuzzySet(0.0,0.5,1.0);
-	fvI2.H = new FuzzySet(0.5,1.0,1.5);
+	i2= new FuzzyVariable();
+	i2.L = new FuzzySet(-0.5,0.0,0.5);
+	i2.M = new FuzzySet(0.0,0.5,1.0);
+	i2.H = new FuzzySet(0.5,1.0,1.5);
 
 Note that this input fuzzy variable has only 3 fuzzy sets (L,M,H) for Low,Medium and High.
 
 The output variable for the controller is defined in the same manner.   
 
-	fvO= new FuzzyVariable();
-	fvO.L = new FuzzySet(-0.5,0.0,0.5);
-	fvO.M = new FuzzySet(0.0,0.5,1.0);
-	fvO.H = new FuzzySet(0.5,1.0,1.5);
+	o = new FuzzyVariable();
+	o.L = new FuzzySet(-0.5,0.0,0.5);
+	o.M = new FuzzySet(0.0,0.5,1.0);
+	o.H = new FuzzySet(0.5,1.0,1.5);
 	
 Then define the fuzzy controller rules for each output set (L,M,H).  Given a rule matrix
 
@@ -61,7 +61,7 @@ Then define the fuzzy controller rules for each output set (L,M,H).  Given a rul
 		<th>VH</th>
 	</tr>
 	<tr>	
-		<td>L</td>
+		<td><b>L</b></td>
 		<td>L</td>
 		<td>M</td>
 		<td>M</td>
@@ -69,7 +69,7 @@ Then define the fuzzy controller rules for each output set (L,M,H).  Given a rul
 		<td>H</td>
 	</tr>
 	<tr>	
-		<td>L</td>
+		<td><b>M</b></td>
 		<td>M</td>
 		<td>M</td>
 		<td>H</td>
@@ -77,7 +77,7 @@ Then define the fuzzy controller rules for each output set (L,M,H).  Given a rul
 		<td>H</td>
 	</tr>
 		<tr>	
-		<td>M</td>
+		<td><b>H</b></td>
 		<td>M</td>
 		<td>H</td>
 		<td>H</td>
@@ -88,10 +88,40 @@ Then define the fuzzy controller rules for each output set (L,M,H).  Given a rul
 	
 </table>
 
+Define the rules by adding expressions to the rule object for each output variable set like : 
 
-	fvO.L.rule = new FuzzyRule();
-	fvO.L.rule.addExpr([fvI1.L,fvI2.L]);
+	o.L.rule = new FuzzyRule();
+	o.L.rule.addExpr([i1.VL,i2.L]);
 
+	o.M.rule = new FuzzyRule();
+	o.M.rule.addExpr([i1.L,i2.L]);
+	o.M.rule.addExpr([i1.M,i2.L]);
+	o.M.rule.addExpr([i1.VL,i2.M]);
+	o.M.rule.addExpr([i1.L,i2.M]);
+	o.M.rule.addExpr([i1.VL,i2.H]);
+	...
+	
+Real input values I1 and I2 must be normalized and fuzzified with the i1 and i2 fuzzy variables
 
+	i1.fuzzyfy(I1);
+	i2.fuzzyfy(I2);
+	
+This will calculate the fuzzy set values for all the fuzzy sets defined by those variables.
+	
+And to calculate the fuzzy output variable use the fireRules() method of the fuzzy variable
 
+	o.fireRules();
+	
+This will internally calculate all the output fuzzy sets.  The real output value is then calculated
+with the defuzzify() method of the fuzzy variable
+
+	var outputValue = o.defuzzify();
+	
+See FuzzyController.html to see example of a inverted pendulum controller that takes the normalized pendulum 
+angle with vertical and angular velocity of the pendulum as inputs and outputs a normalized speed for 
+a pendulum carriage. [See wikipedia}(http://en.wikipedia.org/wiki/Inverted_pendulum)
+
+	
+	
+	
 
