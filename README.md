@@ -117,7 +117,7 @@ with the defuzzify() method of the fuzzy variable
 
 	var outputValue = o.defuzzify();
 	
-See FuzzyController.html to see example of a inverted pendulum controller that takes the normalized pendulum 
+See [FuzzyController.html](https://github.com/arnigeir/jsfuzz/blob/master/FuzzyController.html) to see example of a inverted pendulum controller that takes the normalized pendulum 
 angle with vertical and angular velocity of the pendulum as inputs and outputs a normalized speed for 
 a pendulum carriage. [See wikipedia}(http://en.wikipedia.org/wiki/Inverted_pendulum)
 
