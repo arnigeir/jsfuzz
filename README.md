@@ -122,7 +122,12 @@ See [FuzzyController.html](https://github.com/arnigeir/jsfuzz/blob/master/FuzzyC
 angle with vertical and angular velocity of the pendulum as inputs and outputs a normalized speed for 
 a pendulum carriage. See inverted pendulum on [Wikipedia](http://en.wikipedia.org/wiki/Inverted_pendulum)
 
+A Segway simulation.
+------------------------	
 	
-	
+A inverted pendulum is a complicated system to model and control.  The fuzzy controller makes it possible
+to model such a controller with 5 fuzzy rules, see [FuzzyPendulum.html](https://github.com/arnigeir/jsfuzz/blob/master/segway/fuzzyPendulum.js)
+
+A [Box2D](http://box2d.org/) simulation of such system is implemented in  [Segway.html](https://github.com/arnigeir/jsfuzz/blob/master/segway/segway.html).
 	
 
