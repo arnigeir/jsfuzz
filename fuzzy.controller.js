@@ -112,8 +112,7 @@ var FuzzyVariable = function () {
 		},
 		getFuzzySets : function () {
 			var items = [],
-			property,
-			n;
+			property;
 			for (property in this) {
 				if (this.hasOwnProperty(property) &&
 					this[property].className === 'FuzzySet') {

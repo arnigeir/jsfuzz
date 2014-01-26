@@ -4,133 +4,76 @@
 	<META http-equiv="Content-Script-Type" content="text/javascript">
 	<script src="fuzzy.controller.js"></script>
 	<script src="jquery.js"></script>
+	<script src="fuzzyPendulum.js"></script>
+	
 
 
 	<script>
-		// ******* create the fuzzy variables ********
-		//normalized  fuzzy variable x with 4 fuzzy values (sets) low,medlow,medhigh and high
-		//for input X
-		varX = new FuzzyVariable();
-		//add some fuzzy sets to it
-		varX.VL = new FuzzySet(-0.25,0.0,0.25);
-		varX.L = new FuzzySet(0.0,0.25,0.5);
-		varX.M = new FuzzySet(0.25,0.5,0.75);
-		varX.H = new FuzzySet(0.5,0.75,1.0);
-		varX.VH = new FuzzySet(0.75,1.0,1.25);
-		
-		varDX = new FuzzyVariable();
-		//add some fuzzy sets to it
-		varDX.VL = new FuzzySet(-0.25,0.0,0.25);
-		varDX.L = new FuzzySet(0.0,0.25,0.5);
-		varDX.M = new FuzzySet(0.25,0.5,0.75);
-		varDX.H = new FuzzySet(0.5,0.75,1.0);
-		varDX.VH = new FuzzySet(0.75,1.0,1.25);
-
-		varY = new FuzzyVariable();
-		//add some fuzzy sets to it
-		varY.VL = new FuzzySet(-0.25,0.0,0.25);
-		varY.L = new FuzzySet(0.0,0.25,0.5);
-		varY.M = new FuzzySet(0.25,0.5,0.75);
-		varY.H = new FuzzySet(0.5,0.75,1.0);
-		varY.VH = new FuzzySet(0.75,1.0,1.25);
-		
-		/*
-		Create folowing rule matrix:
-		            X
-		DX	|	VL	L	M	H	VH
-		--------------------------		
-		VL 	|  	VL	L	M 	H	VH
-		L	| 	L	L	M	H	VH
-		M	|	L	M	M	H	VH
-		H	| 	M	H	H	VH	VH
-		VH	|	M	H	VH	VH	VH
-		
-		The pendulum angle is X
-		The angular velocity is DX
-		The values in the matrix is the horizontal speed of the pendulum carriage
-		*/
-		
-				
-
-
-
-		varY.VL.rule = new FuzzyRule();
-		varY.VL.rule.addExpr([varX.VL,varDX.VL]);
 	
-		varY.L.rule = new FuzzyRule();
-		varY.L.rule.addExpr([varX.L,varDX.VL]);
-		varY.L.rule.addExpr([varX.L,varDX.L]);
-		varY.L.rule.addExpr([varX.VL,varDX.L]);
-		varY.L.rule.addExpr([varX.VL,varDX.M]);
-		
-		varY.M.rule = new FuzzyRule();
-		varY.M.rule.addExpr([varX.M,varDX.VL]);
-		varY.M.rule.addExpr([varX.M,varDX.L]);
-		varY.M.rule.addExpr([varX.M,varDX.M]);
-		varY.M.rule.addExpr([varX.L,varDX.M]);
-		varY.M.rule.addExpr([varX.VL,varDX.H]);
-		varY.M.rule.addExpr([varX.VL,varDX.VH]);
-		
-		varY.H.rule = new FuzzyRule();
-		varY.H.rule.addExpr([varX.H,varDX.VL]);
-		varY.H.rule.addExpr([varX.H,varDX.L]);
-		varY.H.rule.addExpr([varX.H,varDX.M]);
-		varY.H.rule.addExpr([varX.H,varDX.M]);
-		varY.H.rule.addExpr([varX.M,varDX.H]);
-		varY.H.rule.addExpr([varX.L,varDX.H]);
-		varY.H.rule.addExpr([varX.L,varDX.VH]);
-		
-		varY.VH.rule = new FuzzyRule();
-		varY.VH.rule.addExpr([varX.VH,varDX.VL]);
-		varY.VH.rule.addExpr([varX.VH,varDX.L]);
-		varY.VH.rule.addExpr([varX.VH,varDX.M]);
-		varY.VH.rule.addExpr([varX.VH,varDX.H]);
-		varY.VH.rule.addExpr([varX.VH,varDX.VH]);
-		varY.VH.rule.addExpr([varX.H,varDX.H]);
-		varY.VH.rule.addExpr([varX.M,varDX.VH]);
-		varY.VH.rule.addExpr([varX.H,varDX.VH]);
-
-		
 		//normalizes the angle and angular velocity to values between 0 and 1
 		function Normalize(value){
 			if(value<0.0) value = 0.0;
 			else if(value>90.0) value = 90.0
-			return value/90.0;
+			value -= 45;
+			return value/45.0;
 		}
-		
+
 		function GetFuzzyRow(v){
 			var fuzzysets = v.getFuzzySets(),
 			n = fuzzysets.length,
 			i = 0,
 			html = "";
 			for(i=0;i<n;i++){
-				html += "<td>"+fuzzysets[i].getFuzzyValue()+"</td>";
+				html += "<td>"+fuzzysets[i].getFuzzyValue().toFixed(2)+"</td>";
 			}
 			return html;
 		}
 		
+		function updateDisplay(){
+			var angle = $("#IX").val();
+			var velocity = $("#IDX").val();
+			
+			if(angle < -1) angle = -1;
+			else if(angle>1) angle = 1;
+			
+			if(velocity < -1) velocity = -1;
+			else if(velocity>1) velocity = 1;			
+			
+			varX.fuzzyfy(angle);
+			varDX.fuzzyfy(velocity);
+			varY.fireRules();
+			var v = varY.defuzzify();
+			var html = "Fuzzy set values:<table>"; 
+			html += "<tr><th> </th><th>NH</th><th>NL</th><th>Z</th><th>PL</th><th>PH</th><tr>";
+			html += "<tr><td>Fuzzy angle</td>"+ GetFuzzyRow(varX) + "<tr>";
+			html += "<tr><td>Fuzzy angular velocity</td>"+ GetFuzzyRow(varDX) + "<tr>";
+			html += "<tr><td>Fuzzy output velocity</td>"+ GetFuzzyRow(varY) + "<tr>";
+			html += "</table>";
+			html += "<br/><b>Input values:</b> angle= "+(1*angle).toFixed(2)+"   angular velocity= "+(1*velocity).toFixed(2);
+			html += "<br/><b>Output value:</b> horizontal speed="+v.toFixed(2);
+			$("#input").html(html);
+		}
+		
 		$(document).ready(function(){
+			
 			$("#pad").mousemove(function(event){
 				var offset = $(this).offset();
-				var angle = Normalize(event.pageX-offset.left);
-				var velocity = Normalize(event.pageY-offset.top);
-				
-				varX.fuzzyfy(angle);
-				varDX.fuzzyfy(velocity);
-				varY.fireRules();
-				var v = varY.defuzzify();
-				var html = "Fuzzy set values:<table>"; 
-				html += "<tr><th> </th><th>VL</th><th>L</th><th>M</th><th>H</th><th>VH</th><tr>";
-				html += "<tr><td>X</td>"+ GetFuzzyRow(varX) + "<tr>";
-				html += "<tr><td>DX</td>"+ GetFuzzyRow(varDX) + "<tr>";
-				html += "<tr><td>Y</td>"+ GetFuzzyRow(varY) + "<tr>";
-				html += "</table>";
-				html += "<br/><b>Input values:</b> angle= "+angle*90+"   angular velocity= "+velocity*90;
-				html += "<br/><b>Output value:</b> horizontal speed="+v;
 				
 				
-				$("#input").html(html);
-			}).mouseout(function(){$("#input").html("");});
+				$("#IX").val(Normalize(event.pageX-offset.left).toFixed(2));
+				$("#IDX").val(Normalize(event.pageY-offset.top).toFixed(2));
+				updateDisplay();
+			});//.mouseout(function(){$("#input").html("");});
+			
+			$("#IX").change(function(){
+				updateDisplay();
+			});
+			
+			$("#IDX").change(function(){
+				updateDisplay();
+			});
+			
+			updateDisplay();
 		
 		});
 	
@@ -158,22 +101,57 @@
 			border: 1px solid black;
 		}
 		td{
-			width:200px;
+			padding: 1px 10px 1px 10px
 		}
 		th{
 			background-color:silver;
 		}
+		#pad{
+			margin-top:30px;
+		}
+		#padvalues{
+			margin-top:20px;
+		}
+		#padvalues  input{
+			border:none;
+			background:#efefef;
+		}
+		
 	</style>
 </head>
 <body>
 <div>
-	<p>Hover with the mouse over the gray pad.  The horizontal axis is the angular value (0-90) and the vertical is the angular speed value (0-90)<p>
-	<p>The results of all calculations are shown below the gray pad</p>
+	<h3>Testpage for fuzzy controller for inverted pendulum</h3>
+	<p>
+	This simple fuzzy controller controls a inverted pendulum object like a Segway or 
+	similar.  The input variables to the controller is the vertical angle and the angular velocity
+	and the control variable is the wheel speed.
+	
+	<p>
+	<p>Enter angle and angular velocity values: </p>
 </div>
 
+
+	<table id="padvalues">
+		<tr>
+			<td>Normalized vertical angle (-1,1):</td>
+			<td><input id="IX" type="text"/></td>
+		</tr>
+		<tr>
+			<td>Normalized angular velocity (-1,1):</td>
+			<td><input id="IDX" type="text"/></td>
+		</tr>		
+	</table>
+	
+	
+	<p>Or hover with the mouse over the gray pad.
+	The x coordinate is the angle and y coordinate is the angular velocity
+	</p>	
 	<div id="pad"></div>
+	
 	<div id="input"></div>
 	<div id="console"></div>
+	
 
 </body>
 </html>

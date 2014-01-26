@@ -101,19 +101,20 @@ Define the rules by adding expressions to the rule object for each output variab
 	o.M.rule.addExpr([i1.VL,i2.H]);
 	...
 	
-Real input values I1 and I2 must be normalized and fuzzified with the i1 and i2 fuzzy variables
+Real input values inputValue1 and inputValue2 must be normalized and fuzzified:
 
-	i1.fuzzyfy(I1);
-	i2.fuzzyfy(I2);
+	i1.fuzzyfy(inputValue1/maxInputValue1);
+	i2.fuzzyfy(inputValue2/maxInputValue2);
 	
-This will calculate the fuzzy set values for all the fuzzy sets defined by those variables.
+This will calculate the fuzzy set value for each and every fuzzy set defined by those variables.
 	
-And to calculate the fuzzy output variable use the fireRules() method of the fuzzy variable
+And to calculate the fuzzy output variable use the fireRules() method of the output fuzzy variable
 
 	o.fireRules();
 	
-This will internally calculate all the output fuzzy sets.  The real output value is then calculated
-with the defuzzify() method of the fuzzy variable
+This will internally calculate all the output fuzzy sets of the output fuzzy variable 'o'.  
+
+The real output value is then calculated with the defuzzify() method of the output fuzzy variable
 
 	var outputValue = o.defuzzify();
 	
