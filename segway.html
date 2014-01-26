@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <script type="text/javascript" src="box2d.js"></script>
+	<script src="jquery.js"></script>
+	<script src="VecUtils.js"></script>
+	<script src="WorldPlotter.js"></script>
+	<script src="Segway.js"></script>
+	<script src="SegwayWorld.js"></script>
+	
+	
+	<script src="fuzzy.controller.js"></script>
+	<script src="fuzzyPendulum.js"></script>
+	
+	<script type="text/javascript">  
+		
+		$(document).ready(function() {
+			'use strict';
+			
+			var globalStep = 0;
+			var speedConst = 3.0;
+
+			
+			var world = segwayWorld();
+			var plotter = worldPlotter(world,document.getElementById("canvas"));
+			var mySegway = segway(world);
+			
+			
+			function GetFuzzyRow(v){
+				var fuzzysets = v.getFuzzySets(),
+				n = fuzzysets.length,
+				i = 0,
+				html = "";
+				for(i=0;i<n;i++){
+					html += "<td>"+fuzzysets[i].getFuzzyValue().toFixed(2)+"</td>";
+				}
+				return html;
+			}
+			
+			
+		
+			function step() {
+				//get the current Segway status
+				var bodyangle = mySegway.getBodyAngle()/1.57;
+				var angularvelocity =  mySegway.getBodyAngleSpeed()/4.0;
+				var wheelspeed = mySegway.getWheelSpeed();
+				var segwayStatus = "";
+				
+				if(bodyangle < -1) {
+				bodyangle = -1;
+				}
+				else if(bodyangle>1) {
+					bodyangle = 1;
+				}
+			
+				if(angularvelocity < -1){ 
+					angularvelocity = -1;
+				}
+				else if(angularvelocity>1){ 
+					angularvelocity = 1;
+				}
+				
+				//calculate new wheel speed
+				varX.fuzzyfy(bodyangle);
+				varDX.fuzzyfy(angularvelocity);
+				varY.fireRules();
+				var speedincrease = -varY.defuzzify();
+				wheelspeed = (50*speedincrease) + wheelspeed;
+				
+				
+				if(Math.abs(speedincrease) < 0.001){
+					wheelspeed = 0.0;
+				}
+				
+				
+				
+				
+				//
+				
+				if(globalStep==0){
+					//destabilate
+					mySegway.setWheelSpeed(1);
+				}
+				else {
+					mySegway.setWheelSpeed(wheelspeed);
+				}
+				
+				
+				
+				world.Step(1/60, 3, 2);
+				
+				plotter.drawWorld();
+				if(globalStep%10 == 0){
+					
+					var html = "<p>Angle is "+bodyangle.toFixed(8)+" rad. body angle speed : "+ angularvelocity.toFixed(8)+"<p>";
+					html += "<p>wheel angular speed increase is "+ speedincrease.toFixed(4) + "  and wheel angular speed is "+wheelspeed.toFixed(8)+"<p>";
+					html +="<div>Fuzzy set values:<table>"; 
+					html += "<tr><th> </th><th>NH</th><th>NL</th><th>Z</th><th>PL</th><th>PH</th><tr>";
+					html += "<tr><td>Fuzzy angle</td>"+ GetFuzzyRow(varX) + "<tr>";
+					html += "<tr><td>Fuzzy angular velocity</td>"+ GetFuzzyRow(varDX) + "<tr>";
+					html += "<tr><td>Fuzzy output velocity</td>"+ GetFuzzyRow(varY) + "<tr>";
+					html += "</table></div>";
+					$("#fuzzyStatus").html(html);
+				}
+				
+				if( Math.abs(bodyangle) >= 1) return;
+				
+				globalStep += 1;
+				
+				setTimeout(function(){step()},10);
+			}	
+			//debalance the segway
+			mySegway.setWheelSpeed(1);
+			//start physics simulation loop
+			setTimeout(function(){step()},10);
+		});
+	</script>
+	
+	<style>
+		table
+		{
+			border-collapse:collapse;
+		}
+		table,th, td
+		{
+			border: 1px solid black;
+		}
+		td{
+			padding: 1px 10px 1px 10px
+		}
+		th{
+			background-color:silver;
+		}
+	</style>
+
+</head>
+
+<body>
+	<canvas id='canvas' width="640" height="480"></canvas>
+	<div id="segwayStatus" </div>
+	<div id="fuzzyStatus" ></div>
+	
+</body>
+</html>
