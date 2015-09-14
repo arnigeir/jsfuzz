@@ -7,7 +7,7 @@ To create a controller.
 ------------------------
 
 First create some input variables.  The following code creates 
-two variables 'varX' and 'varDX'. 
+two variables 'i1' and 'i2'. 
 
 Each variable consists of 1 or more fuzzy sets.  A fuzzy set is a variable
  like LOW (or L) 
