@@ -3,7 +3,7 @@ jsfuzz
 
 A javascript fuzzy logic controller implementation.
 
-To create a controller.
+Creating a controller.
 ------------------------
 
 First create some input variables.  The following code creates 
@@ -52,7 +52,7 @@ The output variable o for the controller is defined in the same manner.
 	
 We must then define the fuzzy controller rules for each output set (L,M,H).  
 
-The table below shows all the possible output values in term of the imput values i1 and i2.  The
+The table below shows all the possible output values in term of the input values i1 and i2.  The
 input values for fuzzy variable i1 are listed in the top row in bold and the input values for the 
 fuzzy variable i2 are shown in bold in the first columns.    
 
@@ -96,7 +96,7 @@ fuzzy variable i2 are shown in bold in the first columns.
 We can then construct the rules from the above matrix by first AND-ing all input values pairs for each row/column for each
 output value.   The output value L for example is only triggered if i1 is VL and i2 is L.  The rule is then 
 
-    if ((i1 is L  and i2 is L) then o = L
+    if (i1 is VL  and i2 is L) then o = L
 
 or in more compact form
 
@@ -106,7 +106,9 @@ The rule for the output M is
 
     o.M = i1.L & i2.L | i1.M & i2.L | i1.VL & i2.M | i1.L & i2.M | i1.VL & i2.H  
 
-and the rule for output L   
+where '&' represent the boolean operator AND and '|' represent the boolean operator OR.
+
+The rule for output L   
 
     o.H = i1.H & i2.L | i1.VH & i1.H | i1.M & i2.M | i1.H & i2.M | i1.VH & i2.M | i1.L & i2.H | i1.M & i2.H | i1.H & i2.H | i1.VH & i2.H
     
@@ -123,23 +125,26 @@ We convert the above rules to code as
 	o.M.rule.addExpr([i1.VL,i2.H]);
 	...
     
-Where each AND expression is added to the rule attribute with addExpr(list) where list is a list of values for each fuzzy variable input (i1 and i2 in this example). 
+Where each AND expression is added to the rule attribute with addExpr(list).  In the example above we only have two input variables and therefore is the list, that is passed to addExpr(), has only two fuzzy sets/values.  The AND terms are then internally ORed together.
 
-	
-Real input values inputValue1 and inputValue2 must be normalized and fuzzified:
+Running the controller.
+------------------------
+The first step is to normalize the real input values (inputValue1 and inputValue2) so that their value lies in the interval [0,1].
+That normalized value is then passed to the fuzzyfy() function of the respective fuzzy variable:
 
 	i1.fuzzyfy(inputValue1/maxInputValue1);
 	i2.fuzzyfy(inputValue2/maxInputValue2);
 	
-This will calculate the fuzzy set value for each and every fuzzy set defined by those variables.
-	
-And to calculate the fuzzy output variable use the fireRules() method of the output fuzzy variable
+This will calculate internally the fuzzy set value for each fuzzy set defined by those variables.
+
+When both input values have been fuzzyfied we can 'run' our fuzzy controller that has been defined by
+the rules in our output fuzzy variable 'o'.
 
 	o.fireRules();
 	
-This will internally calculate all the output fuzzy sets of the output fuzzy variable 'o'.  
+This  internally calculates all the output fuzzy sets values of the output fuzzy variable 'o'.  
 
-The real output value is then calculated with the defuzzify() method of the output fuzzy variable
+The real output value 'outputValue' is then calculated with the defuzzify() method :
 
 	var outputValue = o.defuzzify();
 	
@@ -147,12 +152,4 @@ See [FuzzyController.html](https://github.com/arnigeir/jsfuzz/blob/master/FuzzyC
 angle with vertical and angular velocity of the pendulum as inputs and outputs a normalized speed for 
 a pendulum carriage. See inverted pendulum on [Wikipedia](http://en.wikipedia.org/wiki/Inverted_pendulum)
 
-A Segway simulation.
-------------------------	
-	
-A inverted pendulum is a complicated system to model and control.  The fuzzy controller makes it possible
-to model such a controller with 5 fuzzy rules, see [FuzzyPendulum.html](https://github.com/arnigeir/jsfuzz/blob/master/segway/fuzzyPendulum.js)
-
-A [Box2D](http://box2d.org/) simulation of such system is implemented in  [Segway.html](https://github.com/arnigeir/jsfuzz/blob/master/segway/segway.html).
-	
 
